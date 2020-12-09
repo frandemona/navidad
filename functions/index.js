@@ -24,6 +24,7 @@ exports.createQr = functions.firestore.document('/attendees/{documentId}').onCre
     } else {
       try {
         await snap.ref.set({qr}, {merge: true});
+        functions.logger.log('Created QR For', context.params.documentId);
       } catch (error) {
         functions.logger.log('Error Creating QR For', context.params.documentId, 'Error',error);
       }

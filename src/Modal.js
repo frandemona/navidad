@@ -1,8 +1,7 @@
 // import { Transition } from "@headlessui/react";
 import firebase from 'firebase/app'
 import { useState, useEffect } from 'react'
-import 'react-phone-number-input/style.css'
-import PhoneInput from 'react-phone-number-input'
+import PhoneInput from 'react-phone-number-input/input'
 import { isValidPhoneNumber } from 'react-phone-number-input'
 
 import 'firebase/firestore'
@@ -63,14 +62,17 @@ function Modal({open, setIsOpen, setAttendeeModal, attendeeModal}) {
       return 
     }
 
+    const { id, ...attendeeToUpload } = attendee;
+
     if(attendeeModal.id) {
       await attendeesRef.doc(attendeeModal.id).set({
-        ...attendee,
+        ...attendeeToUpload,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy: uid
       }, {merge: true})
     } else {
       await attendeesRef.add({
-        ...attendee,
+        ...attendeeToUpload,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         createdBy: uid
       })
@@ -108,40 +110,41 @@ function Modal({open, setIsOpen, setAttendeeModal, attendeeModal}) {
                 <div>
                   <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">Nombre</label>
                   <div className="mt-1">
-                    <input value={attendee.firstName} onChange={(e) => setAttendee({...attendee, firstName: e.target.value})} type="text" name="first_name" id="first_name" autoComplete="given-name" className="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" />
+                    <input value={attendee.firstName} onChange={(e) => setAttendee({...attendee, firstName: e.target.value})} type="text" name="first_name" id="first_name" autoComplete="given-name" className="py-2 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" />
                   </div>
                 </div>
                 <div>
                   <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">Apellido</label>
                   <div className="mt-1">
-                    <input value={attendee.lastName} onChange={(e) => setAttendee({...attendee, lastName: e.target.value})} type="text" name="last_name" id="last_name" autoComplete="family-name" className="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" />
+                    <input value={attendee.lastName} onChange={(e) => setAttendee({...attendee, lastName: e.target.value})} type="text" name="last_name" id="last_name" autoComplete="family-name" className="py-2 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" />
                   </div>
                 </div>
-                <div className="sm:col-span-2">
+                <div>
                   <label htmlFor="company" className="block text-sm font-medium text-gray-700">DNI</label>
                   <div className="mt-1">
-                    <input value={attendee.dni} onChange={(e) => setAttendee({...attendee, dni: e.target.value})} type="text" name="company" id="company" autoComplete="organization" className="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" />
+                    <input value={attendee.dni} onChange={(e) => setAttendee({...attendee, dni: e.target.value})} type="text" name="company" id="company" autoComplete="organization" className="py-2 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" />
                   </div>
                 </div>
-                <div className="sm:col-span-2">
+                <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
                   <div className="mt-1">
-                    <input value={attendee.email} onChange={(e) => setAttendee({...attendee, email: e.target.value})} id="email" name="email" type="email" autoComplete="email" className="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" />
+                    <input value={attendee.email} onChange={(e) => setAttendee({...attendee, email: e.target.value})} id="email" name="email" type="email" autoComplete="email" className="py-2 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" />
                   </div>
                 </div>
-                <div className="sm:col-span-2">
+                <div>
                   <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700">Whatsapp</label>
                   <div className="mt-1">
                     <PhoneInput
-                      defaultCountry="AR"
-                      placeholder="1145930404"
+                      international
+                      withCountryCallingCode
+                      placeholder="+54 11 4593 0404"
                       value={attendee.whatsapp} 
                       onChange={value => setAttendee({...attendee, whatsapp: value})}
-                      type="text" name="phone_number" id="phone_number" autoComplete="tel" className="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
+                      type="text" name="phone_number" id="phone_number" autoComplete="tel" className="py-2 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
                       />
                   </div>
                 </div>
-                <div className="sm:col-span-2">
+                <div>
                   <label htmlFor="invitadoDe" className="block text-sm font-medium text-gray-700">Invitado de</label>
                   <select value={attendee.invitadoDe} onChange={(e) => setAttendee({...attendee, invitadoDe: e.target.value})} id="invitadoDe" name="invitadoDe" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                     <option>Fer</option>
@@ -153,7 +156,7 @@ function Modal({open, setIsOpen, setAttendeeModal, attendeeModal}) {
                     <option>Juani</option>
                   </select>
                 </div>
-                <div className="sm:col-span-2">
+                <div>
                   <label htmlFor="medioDePago" className="block text-sm font-medium text-gray-700">Medio de Pago</label>
                   <select value={attendee.medioDePago} onChange={(e) => setAttendee({...attendee, medioDePago: e.target.value})} id="medioDePago" name="medioDePago" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                     <option>Efectivo</option>
@@ -161,7 +164,7 @@ function Modal({open, setIsOpen, setAttendeeModal, attendeeModal}) {
                     <option>Transferencia</option>
                   </select>
                 </div>
-                <div className="sm:col-span-2">
+                <div>
                   <label htmlFor="pagadoA" className="block text-sm font-medium text-gray-700">Pagado A</label>
                   <select value={attendee.pagadoA} onChange={(e) => setAttendee({...attendee, pagadoA: e.target.value})} id="pagadoA" name="pagadoA" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                     <option>Fer</option>
@@ -176,7 +179,7 @@ function Modal({open, setIsOpen, setAttendeeModal, attendeeModal}) {
                 <div className="sm:col-span-2">
                   <label htmlFor="comment" className="block text-sm font-medium text-gray-700">Comentario</label>
                   <div className="mt-1">
-                    <input value={attendee.comentario} onChange={(e) => setAttendee({...attendee, comentario: e.target.value})} id="comment" name="comment" type="text" className="py-3 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" />
+                    <input value={attendee.comentario} onChange={(e) => setAttendee({...attendee, comentario: e.target.value})} id="comment" name="comment" type="text" className="py-2 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" />
                   </div>
                 </div>
                 <div className="sm:col-span-2">
