@@ -1,5 +1,4 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import './App.css';
 import firebase from 'firebase/app'
 import Popper from "popper.js";
 import Header from './Header.js'
