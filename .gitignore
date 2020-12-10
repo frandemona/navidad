@@ -234,3 +234,5 @@ $RECYCLE.BIN/
 ### Firebase Patch ###
 .runtimeconfig.json
 .firebase/
+
+saved-data/

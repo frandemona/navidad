@@ -7,24 +7,47 @@ import { isValidPhoneNumber } from 'react-phone-number-input'
 import 'firebase/firestore'
 
 if (!firebase.apps.length) {
-  firebase.initializeApp({
-    apiKey: "AIzaSyCrXTZO5ANnkxX6LH2AIStwYY94cFS90nE",
-    authDomain: "navidad-cbac1.firebaseapp.com",
-    projectId: "navidad-cbac1",
-    storageBucket: "navidad-cbac1.appspot.com",
-    messagingSenderId: "793154832020",
-    appId: "1:793154832020:web:e33dfa2bcd1b0ee2975681"
-  })
+  if(process.env.NODE_ENV === 'development') {
+    firebase.initializeApp({
+      apiKey: process.env.REACT_APP_apiKey,
+      authDomain: process.env.REACT_APP_authDomain,
+      projectId: process.env.REACT_APP_projectId,
+      storageBucket: process.env.REACT_APP_storageBucket,
+      messagingSenderId: process.env.REACT_APP_messagingSenderId,
+      appId: process.env.REACT_APP_appId,
+    })
+    if(process.env.NODE_ENV === 'development') {
+      firebase.auth().useEmulator('http://localhost:9099/')
+    }
+    if(process.env.NODE_ENV === 'development') {
+      firebase.firestore().useEmulator("localhost", 8080)
+    }
+  } else {
+    firebase.initializeApp({
+      apiKey: "AIzaSyCrXTZO5ANnkxX6LH2AIStwYY94cFS90nE",
+      authDomain: "navidad-cbac1.firebaseapp.com",
+      projectId: "navidad-cbac1",
+      storageBucket: "navidad-cbac1.appspot.com",
+      messagingSenderId: "793154832020",
+      appId: "1:793154832020:web:e33dfa2bcd1b0ee2975681"
+    })
+  }
 }
 
 const firestore = firebase.firestore()
+if(process.env.NODE_ENV === 'development') {
+  firestore.useEmulator("localhost", 8080)
+}
 const auth = firebase.auth()
+if(process.env.NODE_ENV === 'development') {
+  auth.useEmulator('http://localhost:9099/')
+}
 const ATTENDEE_DOCUMENT_REF = 'attendees'
 
 function Modal({open, setIsOpen, setAttendeeModal, attendeeModal}) {
   const attendeesRef = firestore.collection(ATTENDEE_DOCUMENT_REF)
   const [error, setError] = useState('')
-  const [attendee, setAttendee] = useState({id: '', firstName: '', lastName: '', whatsapp: '', email: '', dni: '', pagadoA: 'Fer', invitadoDe: 'Fer', medioDePago: 'Efectivo', comentario: ''})
+  const [attendee, setAttendee] = useState({id: '', firstName: '', lastName: '', whatsapp: '', email: '', dni: '', sexo: 'Femenino', pagadoA: 'Fer', invitadoDe: 'Fer', medioDePago: 'Efectivo', comentario: ''})
 
   useEffect(() => {
     if(attendeeModal.id) {
@@ -36,9 +59,9 @@ function Modal({open, setIsOpen, setAttendeeModal, attendeeModal}) {
   const addAttendee = async(e) => {
     e.preventDefault()
     const {uid} = auth.currentUser
-    const {firstName, lastName, dni, email, whatsapp, pagadoA, invitadoDe, medioDePago} = attendee
+    const {firstName, lastName, dni, email, whatsapp, sexo, pagadoA, invitadoDe, medioDePago} = attendee
 
-    if (!firstName || !lastName || !whatsapp || !email || !dni || !pagadoA || !invitadoDe || !medioDePago) {
+    if (!firstName || !lastName || !whatsapp || !email || !dni || !sexo || !pagadoA || !invitadoDe || !medioDePago) {
       setError('Falta Rellenar todos los campos')
       return 
     }
@@ -78,8 +101,8 @@ function Modal({open, setIsOpen, setAttendeeModal, attendeeModal}) {
       })
     }
 
-    setAttendee({id: '', firstName: '', lastName: '', whatsapp: '', email: '', dni: '', pagadoA: 'Fer', invitadoDe: 'Fer', medioDePago: 'Efectivo', comentario: ''})
-    setAttendeeModal({id: '', firstName: '', lastName: '', whatsapp: '', email: '', dni: '', pagadoA: '', invitadoDe: '', medioDePago: '', comentario: ''})
+    setAttendee({id: '', firstName: '', lastName: '', whatsapp: '', email: '', dni: '', sexo: 'Femenino', pagadoA: 'Fer', invitadoDe: 'Fer', medioDePago: 'Efectivo', comentario: ''})
+    setAttendeeModal({id: '', firstName: '', lastName: '', whatsapp: '', email: '', dni: '', sexo: '', pagadoA: '', invitadoDe: '', medioDePago: '', comentario: ''})
     setIsOpen(false)
     setError(false)
   }
@@ -120,15 +143,9 @@ function Modal({open, setIsOpen, setAttendeeModal, attendeeModal}) {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="company" className="block text-sm font-medium text-gray-700">DNI</label>
+                  <label htmlFor="dni" className="block text-sm font-medium text-gray-700">DNI</label>
                   <div className="mt-1">
-                    <input value={attendee.dni} onChange={(e) => setAttendee({...attendee, dni: e.target.value})} type="text" name="company" id="company" autoComplete="organization" className="py-2 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                  <div className="mt-1">
-                    <input value={attendee.email} onChange={(e) => setAttendee({...attendee, email: e.target.value})} id="email" name="email" type="email" autoComplete="email" className="py-2 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" />
+                    <input value={attendee.dni} onChange={(e) => setAttendee({...attendee, dni: e.target.value})} type="text" name="dni" id="dni" autoComplete="off" className="py-2 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" />
                   </div>
                 </div>
                 <div>
@@ -143,6 +160,19 @@ function Modal({open, setIsOpen, setAttendeeModal, attendeeModal}) {
                       type="text" name="phone_number" id="phone_number" autoComplete="tel" className="py-2 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md"
                       />
                   </div>
+                </div>
+                <div className="sm:col-span-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                  <div className="mt-1">
+                    <input value={attendee.email} onChange={(e) => setAttendee({...attendee, email: e.target.value})} id="email" name="email" type="email" autoComplete="email" className="py-2 px-4 block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md" />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="sexo" className="block text-sm font-medium text-gray-700">Sexo</label>
+                  <select value={attendee.sexo} onChange={(e) => setAttendee({...attendee, sexo: e.target.value})} id="sexo" name="sexo" className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option>Femenino</option>
+                    <option>Masculino</option>
+                  </select>
                 </div>
                 <div>
                   <label htmlFor="invitadoDe" className="block text-sm font-medium text-gray-700">Invitado de</label>

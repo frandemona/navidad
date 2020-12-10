@@ -11,14 +11,31 @@ import { useCollectionData } from 'react-firebase-hooks/firestore'
 import { useState, useEffect, createRef, useRef } from 'react'
 
 if (!firebase.apps.length) {
-  firebase.initializeApp({
-    apiKey: "AIzaSyCrXTZO5ANnkxX6LH2AIStwYY94cFS90nE",
-    authDomain: "navidad-cbac1.firebaseapp.com",
-    projectId: "navidad-cbac1",
-    storageBucket: "navidad-cbac1.appspot.com",
-    messagingSenderId: "793154832020",
-    appId: "1:793154832020:web:e33dfa2bcd1b0ee2975681"
-  })
+  if(process.env.NODE_ENV === 'development') {
+    firebase.initializeApp({
+      apiKey: process.env.REACT_APP_apiKey,
+      authDomain: process.env.REACT_APP_authDomain,
+      projectId: process.env.REACT_APP_projectId,
+      storageBucket: process.env.REACT_APP_storageBucket,
+      messagingSenderId: process.env.REACT_APP_messagingSenderId,
+      appId: process.env.REACT_APP_appId,
+    })
+    if(process.env.NODE_ENV === 'development') {
+      firebase.auth().useEmulator('http://localhost:9099/')
+    }
+    if(process.env.NODE_ENV === 'development') {
+      firebase.firestore().useEmulator("localhost", 8080)
+    }
+  } else {
+    firebase.initializeApp({
+      apiKey: "AIzaSyCrXTZO5ANnkxX6LH2AIStwYY94cFS90nE",
+      authDomain: "navidad-cbac1.firebaseapp.com",
+      projectId: "navidad-cbac1",
+      storageBucket: "navidad-cbac1.appspot.com",
+      messagingSenderId: "793154832020",
+      appId: "1:793154832020:web:e33dfa2bcd1b0ee2975681"
+    })
+  }
 }
 
 const auth = firebase.auth()
@@ -27,7 +44,7 @@ const ATTENDEE_DOCUMENT_REF = 'attendees'
 
 function App() {
   const [isModalOpen, setIsOpen] = useState(false)
-  const [attendeeModal, setAttendeeModal] = useState({id: '', firstName: '', lastName: '', whatsapp: '', email: '', dni: '', pagadoA: '', invitadoDe: '', medioDePago: '', comentario: ''})
+  const [attendeeModal, setAttendeeModal] = useState({id: '', firstName: '', lastName: '', whatsapp: '', email: '', dni: '', sexo: '', pagadoA: '', invitadoDe: '', medioDePago: '', comentario: ''})
   const [user] = useAuthState(auth)
   return (
     <>
@@ -123,73 +140,83 @@ function Table({setAttendeeModal, setIsOpen}) {
 }
 
 function Attendee({setAttendeeModal, setIsOpen, attendee}) {
-  const {id, firstName, lastName, dni, email, whatsapp, pagadoA, invitadoDe, medioDePago, comentario, createdAt} = attendee
+  const {id, firstName, lastName, dni, email, whatsapp,  sexo, pagadoA, qr, invitadoDe, medioDePago, comentario, createdAt} = attendee
 
   const editAttendee = (e) => {
     e.preventDefault()
 
-    setAttendeeModal({id, firstName, lastName, whatsapp, email, dni, pagadoA, invitadoDe, medioDePago, comentario})
+    setAttendeeModal({id, firstName, lastName, whatsapp, email, dni, sexo, pagadoA, invitadoDe, medioDePago, comentario})
     setIsOpen(true)
   }
 
   return (
     <li>
-      <div className="block">
-        <div className="px-4 py-4 sm:px-6">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-indigo-600 truncate">
-              {firstName} {lastName}
-            </p>
-            <div className="ml-2 flex-shrink-0 flex">
-              <p onClick={editAttendee} className="cursor-pointer px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 hover:bg-green-200 text-green-800">
-                Editar
-              </p>
+      <div className="block relative">
+        <div className="flex flex-col sm:flex-row items-center px-4 py-4 sm:px-6">
+          {qr && <div className="min-w-0 flex items-center">
+            <div className="flex-shrink-0">
+              <img className="h-12 w-12" src={qr} alt="QR"/>
             </div>
-          </div>
-          <div className="mt-2 sm:flex sm:justify-between">
-            <div className="sm:flex">
-              <p className="flex items-center text-sm text-gray-500">
-                <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                </svg>
-                {email}
-              </p>
-              <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                {whatsapp}
-              </p>
-              <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
-                {dni}
-              </p>
-              <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                </svg>
-                {invitadoDe}
-              </p>
-              <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                {medioDePago}
-              </p>
-              <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                {pagadoA}
-              </p>
+          </div>}
+          <div className="mt-2 sm:mt-0 min-w-0 flex-1 px-4">
+            <div className="flex items-center justify-between">
+              <div className="flex flex-wrap text-sm font-medium text-indigo-600 truncate">
+                <p>{firstName} {lastName}</p>
+                <p className="ml-1 font-normal text-gray-500">
+                  - {sexo}
+                </p>
+              </div>
+              <div className="absolute top-2 right-2 sm:top-0 sm:right-0 sm:relative ml-2 flex-shrink-0 flex">
+                <p onClick={editAttendee} className="cursor-pointer px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 hover:bg-green-200 text-green-800">
+                  Editar
+                </p>
+              </div>
             </div>
-            <div className="sm:flex">
-              {comentario && <Popover comentario={comentario}/>}
-              {createdAt && (
-                <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                  <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+            <div className="mt-2 sm:flex sm:flex-wrap sm:justify-between">
+              <div className="sm:flex sm:flex-wrap">
+                <p className="flex items-center text-sm text-gray-500">
+                  <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                   </svg>
-                  <p>
-                    Agregado el
-                    <time dateTime={createdAt.toDate().toString()}>{` ${createdAt.toDate().getDay()}/${createdAt.toDate().getMonth() + 1}`}</time>
-                  </p>
-                </div>
-              )}
+                  {email}
+                </p>
+                <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
+                  <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                  {whatsapp}
+                </p>
+                <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
+                  <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
+                  {dni}
+                </p>
+                <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
+                  <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                  </svg>
+                  {invitadoDe}
+                </p>
+                <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
+                  <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                  {medioDePago}
+                </p>
+                <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
+                  <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                  {pagadoA}
+                </p>
+              </div>
+              <div className="sm:flex">
+                {comentario && <Popover comentario={comentario}/>}
+                {createdAt && (
+                  <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                    <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                    </svg>
+                    <p>
+                      Agregado el
+                      <time dateTime={createdAt.toDate().toString()}>{` ${createdAt.toDate().getDay()}/${createdAt.toDate().getMonth() + 1}`}</time>
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
